@@ -16,7 +16,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import ImageUploadForm
-from .models import UploadedImage
+from .models import UploadedImage, FaceDetected
 
 logger = logging.getLogger(__name__)
 
@@ -34,16 +34,16 @@ class UploadImage(View):
             data = form.cleaned_data
             uploaded_file = data["ImageFile"]
 
-            obj_uploaded = UploadedImage(ImageFile=uploaded_file)
+            obj_img_uploaded = UploadedImage(ImageFile=uploaded_file)
             try:
-                obj_uploaded.save()
+                obj_img_uploaded.save()
             except IntegrityError as e:
                 logger.error(e)
                 return JsonResponse({'status': 'false', 'message': 'Error saving file'}, status=500)
 
             model_path = getattr(settings, "MODEL_PATH", "")
             image_dir = getattr(settings, "MEDIA_ROOT", "")
-            image_path = image_dir / obj_uploaded.ImageFile.name
+            image_path = image_dir / obj_img_uploaded.ImageFile.name
 
             print(image_path)
             img = cv2.imread(str(image_path))
@@ -60,6 +60,7 @@ class UploadImage(View):
 
                 # draw rectangle over face
                 cv2.rectangle(img, (startX, startY), (endX, endY), (0, 255, 0), 2)
+                cv2.imwrite(str(image_path) + "1.jpg", img)
 
                 # crop the detected face region
                 face_crop = np.copy(img[startY:endY, startX:endX])
@@ -75,6 +76,13 @@ class UploadImage(View):
                 conf = model.predict(face_crop)[0]
                 idx = np.argmax(conf)
                 img_label = classes[idx]
+
+                obj_face_detected = FaceDetected(Gender=img_label, StartX=startX, StartY=startY,
+                                                 EndX=endX, EndY=endY, Image=obj_img_uploaded)
+                try:
+                    obj_face_detected.save()
+                except IntegrityError as e:
+                    logger.error(e)
 
             return JsonResponse({'status': 'true', 'message': img_label})
 
