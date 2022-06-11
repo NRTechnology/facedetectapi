@@ -76,6 +76,12 @@ class UploadImage(View):
                 conf = model.predict(face_crop)[0]
                 idx = np.argmax(conf)
                 img_label = classes[idx]
+                img_confidence = conf[idx] * 100
+
+                data = {
+                    'label': img_label,
+                    'confidence': img_confidence
+                }
 
                 obj_face_detected = FaceDetected(Gender=img_label, StartX=startX, StartY=startY,
                                                  EndX=endX, EndY=endY, Image=obj_img_uploaded)
@@ -84,6 +90,6 @@ class UploadImage(View):
                 except IntegrityError as e:
                     logger.error(e)
 
-            return JsonResponse({'status': 'true', 'message': img_label})
+            return JsonResponse({'status': 'true', 'message': data})
 
         return JsonResponse({'status': 'false', 'message': 'Not valid form'}, status=500)
