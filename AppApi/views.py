@@ -80,7 +80,12 @@ class UploadImage(View):
 
                 data = {
                     'label': img_label,
-                    'confidence': img_confidence
+                    'confidence': img_confidence,
+                    'startX': str(startX),
+                    'startY': str(startY),
+                    'endX': str(endX),
+                    'endY': str(endY),
+                    'image': str(obj_img_uploaded.ImageFile.name)
                 }
 
                 obj_face_detected = FaceDetected(Gender=img_label, StartX=startX, StartY=startY,
