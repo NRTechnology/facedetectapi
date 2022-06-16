@@ -1,9 +1,14 @@
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 import numpy as np
 import cv2
-import os
 import cvlib as cv
+from .models import FaceDetected
+from .serializer import FaceDetectedSerializer
+from rest_framework.response import Response
 
 import logging
 
@@ -21,8 +26,10 @@ from .models import UploadedImage, FaceDetected
 logger = logging.getLogger(__name__)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-class UploadImage(View):
+# @method_decorator(csrf_exempt, name='dispatch')
+class UploadImage(APIView):
+    permission_classes = (IsAuthenticated,)
+
     @staticmethod
     def get(request, *args, **kwargs):
         return JsonResponse({'status': 'false', 'message': 'Not valid form'}, status=500)
@@ -98,3 +105,16 @@ class UploadImage(View):
             return JsonResponse({'status': 'true', 'message': data})
 
         return JsonResponse({'status': 'false', 'message': 'Not valid form'}, status=500)
+
+
+class FaceDetectedViewSet(viewsets.ModelViewSet):
+    queryset = FaceDetected.objects.all()
+    serializer_class = FaceDetectedSerializer
+
+
+class HelloView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        content = {'message': 'Hello, World!'}
+        return Response(content)
