@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 import cvlib as cv
 from .models import FaceDetected
-from .serializer import FaceDetectedSerializer
+from .serializer import FaceDetectedSerializer, UploadedImageSerializer
 from rest_framework.response import Response
 
 import logging
@@ -94,11 +94,13 @@ class UploadImage(APIView):
                     'endY': str(endY),
                     'image': str(obj_img_uploaded.ImageFile.name)
                 }
-
                 obj_face_detected = FaceDetected(Gender=img_label, StartX=startX, StartY=startY,
                                                  EndX=endX, EndY=endY, Image=obj_img_uploaded)
                 try:
                     obj_face_detected.save()
+                    obj_img_uploaded.Gender = img_label
+                    obj_img_uploaded.Confidence = img_confidence
+                    obj_img_uploaded.save()
                 except IntegrityError as e:
                     logger.error(e)
 
@@ -110,6 +112,11 @@ class UploadImage(APIView):
 class FaceDetectedViewSet(viewsets.ModelViewSet):
     queryset = FaceDetected.objects.all()
     serializer_class = FaceDetectedSerializer
+
+
+class UploadedImageViewSet(viewsets.ModelViewSet):
+    queryset = UploadedImage.objects.all()
+    serializer_class = UploadedImageSerializer
 
 
 class HelloView(APIView):

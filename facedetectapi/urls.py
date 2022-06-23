@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 
-from AppApi.views import FaceDetectedViewSet
+from AppApi.views import FaceDetectedViewSet, UploadedImageViewSet
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -26,6 +26,7 @@ from rest_framework_simplejwt.views import (
 
 router = routers.DefaultRouter()
 router.register(r'facedetected', FaceDetectedViewSet)
+router.register(r'uploadimage', UploadedImageViewSet)
 
 
 urlpatterns = [
